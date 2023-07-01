@@ -1,8 +1,8 @@
 import http.server
+import requests
+
 from prometheus_client import start_http_server
 from prometheus_client import Counter
-
-import requests
 
 REQUESTS = Counter('server_requests_total', 'Total number of requests to this webserver')
 
@@ -12,7 +12,11 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
         REQUESTS.inc()
-        hostname = 'localhost:5000'
+        if self.path != "/header":
+            hostname = 'flask:5000'
+        else:
+            hostname =  'debug:8080'
+
         url = 'http://{}{}'.format(hostname, self.path)
 
         # Call the target service
@@ -22,8 +26,9 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(resp.content)
 
 if __name__ == "__main__":
-    start_http_server(8000)
-    server = http.server.HTTPServer(('', 8001), ServerHandler)
-    print("Prometheus metrics available on port 8000 /metrics")
-    print("HTTP server available on port 8001")
+    server = http.server.HTTPServer(('0.0.0.0', 8000), ServerHandler)
     server.serve_forever()
+    print("HTTP server available on port 8000")
+
+    start_http_server(8001)
+    print("Prometheus metrics available on port 8001 /metrics")
