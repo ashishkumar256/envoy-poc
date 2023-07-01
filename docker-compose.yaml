@@ -1,0 +1,33 @@
+version: "3.7"
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.20-latest
+    volumes:
+    - ./envoy.yaml:/etc/envoy/config.yaml 
+    entrypoint: /usr/local/bin/envoy -c /etc/envoy/config.yaml 
+    networks:
+    - network
+    ports:
+    - "8888:8888"
+  core:
+    image: ashishkumar256/python-core:envoy
+    networks:
+    - network
+    ports:
+      - "8000:8000"      
+  flask:
+    image: ashishkumar256/python-flask:amd
+    networks:
+    - network
+    ports:
+      - "5000:5000"
+  debug:
+    image: mendhak/http-https-echo
+    networks:
+    - network
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+
+networks:
+  network: {}        
